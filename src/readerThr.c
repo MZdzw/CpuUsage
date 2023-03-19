@@ -2,14 +2,20 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+#include <pthread.h>
 #include "readerThr.h"
+#include "queue.h"
 
 #define MAX 80
+
+extern struct Queue cpuStatsQueue;
 
 static int getCpuStatsFromFile();
 
 static char buf[MAX];
-struct CpuUsageStats cpuStats;
+
+CpuUsageStats cpuStats;
 unsigned long* ptrCpyStatsLookUpTable[10] = {
  &(cpuStats.t_user), &(cpuStats.t_nice), &(cpuStats.t_system), &(cpuStats.t_idle),
  &(cpuStats.t_iowait), &(cpuStats.t_irq), &(cpuStats.t_softirq), 
@@ -19,14 +25,19 @@ unsigned long* ptrCpyStatsLookUpTable[10] = {
 
 void* readerThread(void* arg)
 {
-
-    for(int i = 0; i < 20; i++)
+    for(int i = 0; i < 30; i++)
     {
-        sleep(1);
-        printf("Reader Thread\n");
+        sleep(1);       //cause thread to go off
+        //alternative below (need timespec struct as param)
+        //pthread_delay_np(&ts);
 
+        printf("Reader Thread\n");
         if(getCpuStatsFromFile() != OK)
             return NULL;
+        //we got CPU usage in cpuStats variable
+        //push it to our queue and then print queue
+        push(cpuStats);
+        printQueue();
     }
 
     return NULL;
@@ -60,7 +71,9 @@ static int getCpuStatsFromFile()
             ptrStringSplit = strtok(NULL, " ");
         }
 	}
-    printf("%lu\n", cpuStats.t_user);
+    //printf("%lu\n", cpuStats.t_user);
+    ////
+
 
     fclose(ptrStatsFile);
     return OK;

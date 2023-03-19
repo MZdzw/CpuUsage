@@ -4,7 +4,7 @@
 #include "analyzerThr.h"
 
 
-int main(int argc, char* argv[])
+int main(void)
 {
     pthread_t reader_T;
     pthread_t analyzer_T;
