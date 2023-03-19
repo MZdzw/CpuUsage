@@ -51,7 +51,7 @@ $(PRJ_NAME): $(OBJ) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $(BIN_DIR)/$@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) -I$(INC_DIR) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) -I$(INC_DIR) $(CPPFLAGS) -pthread $(CFLAGS) -c $< -o $@
 
 ##########################################################################################
 
@@ -74,7 +74,7 @@ $(OBJ_DIR)/%.o: $(TEST_DIR)/%.c | $(OBJ_DIR)
 	$(CC) -I$(INC_DIR) -I$(UNITY_DIR)/ $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) -I$(INC_DIR) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) -I$(INC_DIR) $(CPPFLAGS) -pthread $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(UNITY_DIR)/%.c | $(OBJ_DIR)
 	$(CC) -I$(UNITY_DIR)/ $(CPPFLAGS) $(CFLAGS) -c $< -o $@
