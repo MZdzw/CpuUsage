@@ -54,6 +54,6 @@ void printQueue()
     for(size_t i = 0; i < cpuStatsQueue.size; i++)
     {
         int index = (cpuStatsQueue.front + i) % MAX_CAPACITY;
-        printf("%lu\n", cpuStatsQueue.cpuValues[index].t_user);
+        printf("%s\n", cpuStatsQueue.cpuValues[index].t_cpuName);
     }
 }

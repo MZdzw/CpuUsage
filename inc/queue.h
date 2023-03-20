@@ -6,10 +6,11 @@
 #define OK 0
 #define FULL_ERROR -1
 
-#define MAX_CAPACITY 20
+#define MAX_CAPACITY 40
 
 typedef struct
 {
+    char t_cpuName[6];          // cpuxx\0
     unsigned long t_user;
     unsigned long t_nice;
     unsigned long t_system;
@@ -21,6 +22,10 @@ typedef struct
     unsigned long t_guest;
     unsigned long t_guestNice;
 } CpuUsageStats;
+
+//variable initialized in main function
+extern pthread_mutex_t queueMutex;     //for accessing queue
+extern pthread_cond_t condQueue;
 
 struct Queue
 {
