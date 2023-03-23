@@ -3,6 +3,19 @@
 
 
 struct Queue cpuStatsQueue = {.front = 0, .rear = 0, .size = 0};
+// define an array of function pointers to the accessor functions
+unsigned long* (*accessorsCpu[10])(CpuUsageStats*) = {
+    &getUser,
+    &getNice,
+    &getSystem,
+    &getIdle,
+    &getIowait,
+    &getIrq,
+    &getSoftirq,
+    &getSteal,
+    &getGuest,
+    &getGuestNice
+};
 
 
 bool isFull()
@@ -56,4 +69,44 @@ void printQueue()
         int index = (cpuStatsQueue.front + i) % MAX_CAPACITY;
         printf("%s\n", cpuStatsQueue.cpuValues[index].t_cpuName);
     }
+}
+
+unsigned long* getUser(CpuUsageStats *stats) {
+    return &(stats->t_user);
+}
+
+unsigned long* getNice(CpuUsageStats *stats) {
+    return &(stats->t_nice);
+}
+
+unsigned long* getSystem(CpuUsageStats *stats) {
+    return &(stats->t_system);
+}
+
+unsigned long* getIdle(CpuUsageStats *stats) {
+    return &(stats->t_idle);
+}
+
+unsigned long* getIowait(CpuUsageStats *stats) {
+    return &(stats->t_iowait);
+}
+
+unsigned long* getIrq(CpuUsageStats *stats) {
+    return &(stats->t_irq);
+}
+
+unsigned long* getSoftirq(CpuUsageStats *stats) {
+    return &(stats->t_softirq);
+}
+
+unsigned long* getSteal(CpuUsageStats *stats) {
+    return &(stats->t_steal);
+}
+
+unsigned long* getGuest(CpuUsageStats *stats) {
+    return &(stats->t_guest);
+}
+
+unsigned long* getGuestNice(CpuUsageStats *stats) {
+    return &(stats->t_guestNice);
 }

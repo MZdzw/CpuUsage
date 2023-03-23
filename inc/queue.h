@@ -46,4 +46,18 @@ CpuUsageStats* rear();
 
 void printQueue();
 
+// add accessors to CpuUsageStats members
+// This method allows to be independent of the memory layout
+unsigned long* getUser(CpuUsageStats *stats);
+unsigned long* getNice(CpuUsageStats *stats);
+unsigned long* getSystem(CpuUsageStats *stats);
+unsigned long* getIdle(CpuUsageStats *stats);
+unsigned long* getIowait(CpuUsageStats *stats);
+unsigned long* getIrq(CpuUsageStats *stats);
+unsigned long* getSoftirq(CpuUsageStats *stats);
+unsigned long* getSteal(CpuUsageStats *stats);
+unsigned long* getGuest(CpuUsageStats *stats);
+unsigned long* getGuestNice(CpuUsageStats *stats);
+
+
 #endif

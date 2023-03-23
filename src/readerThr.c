@@ -10,6 +10,7 @@
 #define MAX 100
 
 extern struct Queue cpuStatsQueue;
+extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
 
 static int getCpuStatsFromFile();
 static int getCpuThreadsNum();
@@ -18,11 +19,11 @@ static char buf[MAX];
 unsigned int threadsNum;
 
 CpuUsageStats cpuStats;
-unsigned long* ptrCpyStatsLookUpTable[10] = {
- &(cpuStats.t_user), &(cpuStats.t_nice), &(cpuStats.t_system), &(cpuStats.t_idle), 
- &(cpuStats.t_iowait), &(cpuStats.t_irq), &(cpuStats.t_softirq), 
- &(cpuStats.t_steal), &(cpuStats.t_guest), &(cpuStats.t_guestNice)
- };
+// unsigned long* ptrCpyStatsLookUpTable[10] = {
+//  &(cpuStats.t_user), &(cpuStats.t_nice), &(cpuStats.t_system), &(cpuStats.t_idle), 
+//  &(cpuStats.t_iowait), &(cpuStats.t_irq), &(cpuStats.t_softirq), 
+//  &(cpuStats.t_steal), &(cpuStats.t_guest), &(cpuStats.t_guestNice)
+//  };
 
 
 void* readerThread(void* arg)
@@ -75,7 +76,8 @@ static int getCpuStatsFromFile()
         {
             if(cnt < 10)
             {
-                *ptrCpyStatsLookUpTable[cnt++] = strtoul(ptrStringSplit, &ptrTmp, 10);
+
+                *(accessorsCpu[cnt++](&cpuStats)) = strtoul(ptrStringSplit, &ptrTmp, 10);
                 ptrStringSplit = strtok(NULL, " ");
             }
             else
