@@ -22,6 +22,8 @@ void* analyzerThread(void* arg)
     CpuUsageStats* cpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1));
     CpuUsageStats* prevCpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1));
 
+    CpuUsageStatsPrint* cpuStatsPrint = malloc(sizeof(CpuUsageStatsPrint) * (threadsNum + 1));
+
     // loop over all prevCpuStats member to init values (first CPU usage is irrelevant)
     for(size_t i = 0; i < threadsNum; i++)
     {
@@ -31,25 +33,26 @@ void* analyzerThread(void* arg)
         }
     }
 
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 2; i++)
     {
-        pthread_mutex_lock(&queueMutex);
+        pthread_mutex_lock(&queueCpuStatsMutex);
+        //printf("Analyzer thread\n");
 
-        while((tmpCpuStats = dequeue()) == NULL)
+        while((tmpCpuStats = dequeue_CpuStats()) == NULL)
         {
-            pthread_cond_wait(&condQueue, &queueMutex);
+            pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
         }
         if(tmpCpuStats != NULL)
          cpuStats[0] = *tmpCpuStats;
       
         int cnt = 1;
-        while((tmpCpuStats = dequeue()) != NULL)
+        while((tmpCpuStats = dequeue_CpuStats()) != NULL)
         {
             cpuStats[cnt++] = *tmpCpuStats;
         }
 
 
-        pthread_mutex_unlock(&queueMutex);
+        pthread_mutex_unlock(&queueCpuStatsMutex);
 
         // printf("Cpu val: %s - %lu\n", cpuStats[0].t_cpuName, cpuStats[0].t_user);
         // printf("Prev val: %s - %lu\n", prevCpuStats[0].t_cpuName, prevCpuStats[0].t_user);
@@ -75,18 +78,25 @@ void* analyzerThread(void* arg)
             unsigned long Total = Idle + NonIdle;
             unsigned long totald = Total - PrevTotal;
             unsigned long idled = Idle - PrevIdle;
-            double CPU_Percentage = (double)(totald - idled)/totald;
+            cpuStatsPrint[i].t_cpuUsagePercentage = (double)(totald - idled)/totald;
+            strcpy(cpuStatsPrint[i].t_cpuName, cpuStats[i].t_cpuName);
+
+            //printf("%s usage: %f\n", cpuStatsPrint[i].t_cpuName, cpuStatsPrint[i].t_cpuUsagePercentage);
         }
 
-        // printf("PrevIde/Idle: %lu/%lu\n", PrevIdle, Idle);
-        // printf("PrevNonIdle/NonIdle: %lu/%lu\n", PrevNonIdle, NonIdle);
-        // printf("PrevTotal/Total: %lu/%lu\n", PrevTotal, Total);
-        // printf("totald/idled: %lu/%lu\n", totald, idled);
-        // printf("CPU usage: %f\n", CPU_Percentage);
+        // get mutex lock and push values to queue for printing
+        pthread_mutex_lock(&queueCpuStatsPrinterMutex);
+        for(size_t i = 0; i < threadsNum + 1; i++)
+        {
+            push_CpuStatsPrint(cpuStatsPrint[i]);
+        }
+        pthread_cond_signal(&condCpuStatsPrinterQueue);
+        pthread_mutex_unlock(&queueCpuStatsPrinterMutex);
 
         memcpy(prevCpuStats, cpuStats, sizeof(CpuUsageStats) * (threadsNum + 1));
     }
     free(cpuStats);
     free(prevCpuStats);
+    free(cpuStatsPrint);
     return NULL;
 }

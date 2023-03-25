@@ -9,7 +9,7 @@
 
 #define MAX 100
 
-extern struct Queue cpuStatsQueue;
+extern struct QueueCpuStats cpuStatsQueue;
 extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
 
 static int getCpuStatsFromFile();
@@ -29,18 +29,18 @@ CpuUsageStats cpuStats;
 void* readerThread(void* arg)
 {
     getCpuThreadsNum();
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 2; i++)
     {
-        pthread_mutex_lock(&queueMutex);
+        pthread_mutex_lock(&queueCpuStatsMutex);
         //alternative below (need timespec struct as param)
         //pthread_delay_np(&ts);
-        printf("Reader Thread\n");
+        //printf("Reader Thread\n");
         if(getCpuStatsFromFile() != OK)
             return NULL;
 
-        printQueue();
-        pthread_cond_signal(&condQueue);
-        pthread_mutex_unlock(&queueMutex);
+        //printQueue();
+        pthread_cond_signal(&condCpuStatsQueue);
+        pthread_mutex_unlock(&queueCpuStatsMutex);
         sleep(1);       //cause thread to go off
     }
 
@@ -86,7 +86,7 @@ static int getCpuStatsFromFile()
             }
         }
         //we got CPU usage in cpuStats variable
-        push(cpuStats);
+        push_CpuStats(cpuStats);
     }
 
     fclose(ptrStatsFile);

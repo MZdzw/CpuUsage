@@ -2,7 +2,9 @@
 #include "queue.h"
 
 
-struct Queue cpuStatsQueue = {.front = 0, .rear = 0, .size = 0};
+struct QueueCpuStats cpuStatsQueue = {.front = 0, .rear = 0, .size = 0};
+struct QueueCpuStatsPrint cpuStatsQueuePrint = {.front = 0, .rear = 0, .size = 0};
+
 // define an array of function pointers to the accessor functions
 unsigned long* (*accessorsCpu[10])(CpuUsageStats*) = {
     &getUser,
@@ -18,19 +20,19 @@ unsigned long* (*accessorsCpu[10])(CpuUsageStats*) = {
 };
 
 
-bool isFull()
+bool isFull_CpuStats()
 {
     return (cpuStatsQueue.size == MAX_CAPACITY);
 }
 
-bool isEmpty()
+bool isEmpty_CpuStats()
 {
     return (cpuStatsQueue.size == 0);
 }
 
-int push(CpuUsageStats cpuStats)
+int push_CpuStats(CpuUsageStats cpuStats)
 {
-    if(isFull())
+    if(isFull_CpuStats())
         return FULL_ERROR;
     cpuStatsQueue.cpuValues[cpuStatsQueue.rear] = cpuStats;
     cpuStatsQueue.rear = (cpuStatsQueue.rear + 1) % MAX_CAPACITY;
@@ -38,9 +40,9 @@ int push(CpuUsageStats cpuStats)
     return OK;
 }
 
-CpuUsageStats* dequeue()
+CpuUsageStats* dequeue_CpuStats()
 {
-    if(isEmpty())
+    if(isEmpty_CpuStats())
         return NULL;
     CpuUsageStats* cpuStatsDequeued = &(cpuStatsQueue.cpuValues[cpuStatsQueue.front]);
     cpuStatsQueue.front = (cpuStatsQueue.front + 1) % MAX_CAPACITY;
@@ -48,16 +50,16 @@ CpuUsageStats* dequeue()
     return cpuStatsDequeued;
 }
 
-CpuUsageStats* front()
+CpuUsageStats* front_CpuStats()
 {
-    if(isEmpty())
+    if(isEmpty_CpuStats())
         return NULL;
     return &(cpuStatsQueue.cpuValues[cpuStatsQueue.front]);
 }
 
-CpuUsageStats* rear()
+CpuUsageStats* rear_CpuStats()
 {
-    if(isEmpty())
+    if(isEmpty_CpuStats())
         return NULL;
     return &(cpuStatsQueue.cpuValues[cpuStatsQueue.rear]);
 }
@@ -69,6 +71,50 @@ void printQueue()
         int index = (cpuStatsQueue.front + i) % MAX_CAPACITY;
         printf("%s\n", cpuStatsQueue.cpuValues[index].t_cpuName);
     }
+}
+
+bool isFull_CpuStatsPrint()
+{
+    return (cpuStatsQueuePrint.size == MAX_CAPACITY);
+}
+
+bool isEmpty_CpuStatsPrint()
+{
+    return (cpuStatsQueuePrint.size == 0);
+}
+
+int push_CpuStatsPrint(CpuUsageStatsPrint cpuStatsPrint)
+{
+    if(isFull_CpuStatsPrint())
+        return FULL_ERROR;
+    cpuStatsQueuePrint.cpuValues[cpuStatsQueuePrint.rear] = cpuStatsPrint;
+    cpuStatsQueuePrint.rear = (cpuStatsQueuePrint.rear + 1) % MAX_CAPACITY;
+    cpuStatsQueuePrint.size++;
+    return OK;
+}
+
+CpuUsageStatsPrint* dequeue_CpuStatsPrint()
+{
+    if(isEmpty_CpuStatsPrint())
+        return NULL;
+    CpuUsageStatsPrint* cpuStatsDequeuedPrint = &(cpuStatsQueuePrint.cpuValues[cpuStatsQueuePrint.front]);
+    cpuStatsQueuePrint.front = (cpuStatsQueuePrint.front + 1) % MAX_CAPACITY;
+    cpuStatsQueuePrint.size--;
+    return cpuStatsDequeuedPrint;
+}
+
+CpuUsageStatsPrint* front_CpuStatsPrint()
+{
+    if(isEmpty_CpuStatsPrint())
+        return NULL;
+    return &(cpuStatsQueuePrint.cpuValues[cpuStatsQueuePrint.front]);
+}
+
+CpuUsageStatsPrint* rear_CpuStatsPrint()
+{
+    if(isEmpty_CpuStatsPrint())
+        return NULL;
+    return &(cpuStatsQueuePrint.cpuValues[cpuStatsQueuePrint.rear]);   
 }
 
 unsigned long* getUser(CpuUsageStats *stats) {

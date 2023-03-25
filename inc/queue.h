@@ -23,11 +23,21 @@ typedef struct
     unsigned long t_guestNice;
 } CpuUsageStats;
 
-//variable initialized in main function
-extern pthread_mutex_t queueMutex;     //for accessing queue
-extern pthread_cond_t condQueue;
+typedef struct 
+{
+    char t_cpuName[6];
+    double t_cpuUsagePercentage;
+} CpuUsageStatsPrint;
 
-struct Queue
+
+//variable initialized in main function
+extern pthread_mutex_t queueCpuStatsMutex;     //for accessing queue with CpuStats (analyzer-reader)
+extern pthread_mutex_t queueCpuStatsPrinterMutex;     //for accessing queue for printing
+
+extern pthread_cond_t condCpuStatsQueue;
+extern pthread_cond_t condCpuStatsPrinterQueue;
+
+struct QueueCpuStats
 {
     CpuUsageStats cpuValues[MAX_CAPACITY];
     size_t front;       //index for dequeue
@@ -37,14 +47,34 @@ struct Queue
 
 // functions for processing the queue
 
-bool isFull();
-bool isEmpty();
-int push(CpuUsageStats cpuStats);
-CpuUsageStats* dequeue();
-CpuUsageStats* front();
-CpuUsageStats* rear();
+bool isFull_CpuStats();
+bool isEmpty_CpuStats();
+int push_CpuStats(CpuUsageStats cpuStats);
+CpuUsageStats* dequeue_CpuStats();
+CpuUsageStats* front_CpuStats();
+CpuUsageStats* rear_CpuStats();
 
 void printQueue();
+
+//queue for printing purposes
+struct QueueCpuStatsPrint
+{
+    CpuUsageStatsPrint cpuValues[MAX_CAPACITY];
+    size_t front;       //index for dequeue
+    size_t rear;        //index for push
+    size_t size;        //current size of queue
+};
+
+// functions for processing the printing queue
+
+bool isFull_CpuStatsPrint();
+bool isEmpty_CpuStatsPrint();
+int push_CpuStatsPrint(CpuUsageStatsPrint cpuStatsPrint);
+CpuUsageStatsPrint* dequeue_CpuStatsPrint();
+CpuUsageStatsPrint* front_CpuStatsPrint();
+CpuUsageStatsPrint* rear_CpuStatsPrint();
+
+
 
 // add accessors to CpuUsageStats members
 // This method allows to be independent of the memory layout
