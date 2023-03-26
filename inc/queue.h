@@ -37,6 +37,8 @@ extern pthread_mutex_t queueCpuStatsPrinterMutex;     //for accessing queue for 
 extern pthread_cond_t condCpuStatsQueue;
 extern pthread_cond_t condCpuStatsPrinterQueue;
 
+extern pthread_barrier_t barrier;
+
 struct QueueCpuStats
 {
     CpuUsageStats cpuValues[MAX_CAPACITY];

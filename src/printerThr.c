@@ -8,24 +8,28 @@
 extern unsigned int threadsNum;
 
 static void printCpuUsage(CpuUsageStatsPrint* cpuUsage);
-static int cnt;
 
 void* printerThread(void* arg)
 {
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = 300000;    //300 ms
+    // struct timespec ts;
+    // ts.tv_sec = 0;
+    // ts.tv_nsec = 300000;    //300 ms
     //wait some time to get threadsNum set
-    nanosleep(&ts, &ts);   
-    printf("%d\n", threadsNum); 
+
+    // nanosleep(&ts, &ts);   
+    // pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
+    // pthread_mutex_unlock(&queueCpuStatsMutex);
+    printf("Before barrier waiting (printer)\n");
+    pthread_barrier_wait(&barrier);
+    printf("Threads num in printer (begining): %d\n", threadsNum); 
 
     CpuUsageStatsPrint* tmpCpuStatsPrint;
-    CpuUsageStatsPrint* cpuStatsPrint = malloc(sizeof(CpuUsageStatsPrint) * (threadsNum + 1));
+    CpuUsageStatsPrint* cpuStatsPrint = malloc(sizeof(CpuUsageStatsPrint) * (threadsNum + 1) * 3); //times 3 in case to buffer some data
 
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < 10; i++)
     {
         pthread_mutex_lock(&queueCpuStatsPrinterMutex);
-        //printf("Printer thread\n");
+        printf("Printer thread inside: %d\n", i);
 
         while((tmpCpuStatsPrint = dequeue_CpuStatsPrint()) == NULL)
         {
@@ -55,20 +59,21 @@ void* printerThread(void* arg)
 static void printCpuUsage(CpuUsageStatsPrint* cpuUsage)
 {
     unsigned int size;
+    system("clear");
     for(unsigned int i = 0; i < (threadsNum + 1); i++)
     {
         gotoxy(i + 1, 1);
         size = cpuUsage[i].t_cpuUsagePercentage * 10;
-        printf("%s usage:", cpuUsage[i].t_cpuName);
+        printf("%s", cpuUsage[i].t_cpuName);
+        gotoxy(i + 1, 6);
+        printf("usage:  ");
         gotoxy(i + 1, 13);
         printf("[");
-        printf("          ");   //empty space between square brackets
+        printf("          ");   //clear space between square brackets
         gotoxy(i + 1, 14);
         for(unsigned int j = 0; j < size; j++)
             printf("|");
         gotoxy(i + 1, 24);  
-        printf("] - %.1f %%", cpuUsage[i].t_cpuUsagePercentage * 100);
-     // printf("%s usage: %f\n", cpuUsage[i].t_cpuName, cpuUsage[i].t_cpuUsagePercentage);
+        printf("] - %.1f%%  ", cpuUsage[i].t_cpuUsagePercentage * 100);
     }
-    printf("\n%d", cnt++);
 }

@@ -28,20 +28,28 @@ CpuUsageStats cpuStats;
 
 void* readerThread(void* arg)
 {
+    // pthread_mutex_lock(&queueCpuStatsMutex);
     getCpuThreadsNum();
-    for(int i = 0; i < 2; i++)
+    printf("Reader broadcast\n");
+    // pthread_cond_broadcast(&condCpuStatsQueue);
+    // pthread_mutex_unlock(&queueCpuStatsMutex);
+    printf("Before barrier waiting (reader)\n");
+    pthread_barrier_wait(&barrier);
+
+    for(int i = 0; i < 10; i++)
     {
+        sleep(1);       //cause thread to go off
         pthread_mutex_lock(&queueCpuStatsMutex);
+        
         //alternative below (need timespec struct as param)
         //pthread_delay_np(&ts);
-        //printf("Reader Thread\n");
+        printf("Reader Thread inside %d\n", i);
         if(getCpuStatsFromFile() != OK)
             return NULL;
 
         //printQueue();
         pthread_cond_signal(&condCpuStatsQueue);
         pthread_mutex_unlock(&queueCpuStatsMutex);
-        sleep(1);       //cause thread to go off
     }
 
     return NULL;

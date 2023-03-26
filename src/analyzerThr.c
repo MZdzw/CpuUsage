@@ -11,21 +11,25 @@ extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
 
 void* analyzerThread(void* arg)
 {
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = 300000;    //300 ms
+    // struct timespec ts;
+    // ts.tv_sec = 0;
+    // ts.tv_nsec = 300000;    //300 ms
     //wait some time to get threadsNum set
-    nanosleep(&ts, &ts);   
-    printf("%d\n", threadsNum); 
+    // nanosleep(&ts, &ts);   
+    // pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
+    // pthread_mutex_unlock(&queueCpuStatsMutex);
+    printf("Before barrier waiting (analyzer)\n");
+    pthread_barrier_wait(&barrier);
+    printf("Threads num in analyzer (begining): %d\n", threadsNum); 
     
     CpuUsageStats* tmpCpuStats;
-    CpuUsageStats* cpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1));
-    CpuUsageStats* prevCpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1));
+    CpuUsageStats* cpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1) * 3);     //times 3 in case to buffer some data
+    CpuUsageStats* prevCpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1) * 3);
 
     CpuUsageStatsPrint* cpuStatsPrint = malloc(sizeof(CpuUsageStatsPrint) * (threadsNum + 1));
 
     // loop over all prevCpuStats member to init values (first CPU usage is irrelevant)
-    for(size_t i = 0; i < threadsNum; i++)
+    for(size_t i = 0; i < threadsNum + 1; i++)
     {
         for(int j = 0; j < 10; j++)
         {
@@ -33,15 +37,16 @@ void* analyzerThread(void* arg)
         }
     }
 
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < 10; i++)
     {
         pthread_mutex_lock(&queueCpuStatsMutex);
-        //printf("Analyzer thread\n");
+        printf("Analyzer thread inside %d\n", i);
 
         while((tmpCpuStats = dequeue_CpuStats()) == NULL)
         {
             pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
         }
+        printf("Analyzer thread after condition %d\n", i);
         if(tmpCpuStats != NULL)
          cpuStats[0] = *tmpCpuStats;
       

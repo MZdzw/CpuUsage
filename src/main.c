@@ -11,6 +11,8 @@ pthread_mutex_t queueCpuStatsPrinterMutex;
 pthread_cond_t condCpuStatsQueue;
 pthread_cond_t condCpuStatsPrinterQueue;
 
+pthread_barrier_t barrier;
+
 int main(void)
 {
     system("clear");
@@ -23,6 +25,8 @@ int main(void)
 
     pthread_cond_init(&condCpuStatsQueue, NULL);
     pthread_cond_init(&condCpuStatsPrinterQueue, NULL);
+
+    pthread_barrier_init(&barrier, NULL, 3);
 
     pthread_create(&reader_T, NULL, &readerThread, NULL);
     pthread_create(&analyzer_T, NULL, &analyzerThread, NULL);
@@ -37,6 +41,8 @@ int main(void)
 
     pthread_cond_destroy(&condCpuStatsQueue);
     pthread_cond_destroy(&condCpuStatsPrinterQueue);
+
+    pthread_barrier_destroy(&barrier);
 
     return 0;
 }
