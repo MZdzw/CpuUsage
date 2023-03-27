@@ -4,6 +4,7 @@
 #include "readerThr.h"
 #include "analyzerThr.h"
 #include "printerThr.h"
+#include "watchdogThr.h"
 
 pthread_mutex_t queueCpuStatsMutex;
 pthread_mutex_t queueCpuStatsPrinterMutex;
@@ -19,6 +20,7 @@ int main(void)
     pthread_t reader_T;
     pthread_t analyzer_T;
     pthread_t printer_T;
+    pthread_t watchdog_T;
 
     pthread_mutex_init(&queueCpuStatsMutex, NULL);
     pthread_mutex_init(&queueCpuStatsPrinterMutex, NULL);
@@ -31,10 +33,12 @@ int main(void)
     pthread_create(&reader_T, NULL, &readerThread, NULL);
     pthread_create(&analyzer_T, NULL, &analyzerThread, NULL);
     pthread_create(&printer_T, NULL, &printerThread, NULL);
+    pthread_create(&watchdog_T, NULL, &watchdogThread, NULL);
 
     pthread_join(reader_T, NULL);
     pthread_join(analyzer_T, NULL);
     pthread_join(printer_T, NULL);
+    pthread_join(watchdog_T, NULL);
 
     pthread_mutex_destroy(&queueCpuStatsMutex);
     pthread_mutex_destroy(&queueCpuStatsMutex);

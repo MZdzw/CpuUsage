@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
+#include <stdatomic.h>
 #include "readerThr.h"
 #include "queue.h"
 
@@ -11,23 +12,23 @@
 
 extern struct QueueCpuStats cpuStatsQueue;
 extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
+extern atomic_bool readerCheckPoint;
 
-static int getCpuStatsFromFile();
-static int getCpuThreadsNum();
+static int getCpuStatsFromFile(void);
+static int getCpuThreadsNum(void);
 
 static char buf[MAX];
 unsigned int threadsNum;
 
 CpuUsageStats cpuStats;
-// unsigned long* ptrCpyStatsLookUpTable[10] = {
-//  &(cpuStats.t_user), &(cpuStats.t_nice), &(cpuStats.t_system), &(cpuStats.t_idle), 
-//  &(cpuStats.t_iowait), &(cpuStats.t_irq), &(cpuStats.t_softirq), 
-//  &(cpuStats.t_steal), &(cpuStats.t_guest), &(cpuStats.t_guestNice)
-//  };
+atomic_bool readerToClose;
 
 
 void* readerThread(void* arg)
 {
+    (void)arg;     //to get rid of warning
+    atomic_store(&readerToClose, false);
+    printf("First reader\n");
     // pthread_mutex_lock(&queueCpuStatsMutex);
     getCpuThreadsNum();
     printf("Reader broadcast\n");
@@ -50,12 +51,18 @@ void* readerThread(void* arg)
         //printQueue();
         pthread_cond_signal(&condCpuStatsQueue);
         pthread_mutex_unlock(&queueCpuStatsMutex);
+
+        atomic_store(&readerCheckPoint, true);
+        if(atomic_load(&readerToClose))
+        {
+            return NULL;
+        }
     }
 
     return NULL;
 }
 
-static int getCpuStatsFromFile()
+static int getCpuStatsFromFile(void)
 {
     FILE* ptrStatsFile = fopen("/proc/stat", "r");
     if(ptrStatsFile == NULL)
@@ -101,7 +108,7 @@ static int getCpuStatsFromFile()
     return OK;
 }
 
-static int getCpuThreadsNum()
+static int getCpuThreadsNum(void)
 {
     FILE* ptrStatsFile = fopen("/proc/stat", "r");
     if(ptrStatsFile == NULL)

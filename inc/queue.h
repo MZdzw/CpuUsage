@@ -49,14 +49,14 @@ struct QueueCpuStats
 
 // functions for processing the queue
 
-bool isFull_CpuStats();
-bool isEmpty_CpuStats();
+bool isFull_CpuStats(void);
+bool isEmpty_CpuStats(void);
 int push_CpuStats(CpuUsageStats cpuStats);
-CpuUsageStats* dequeue_CpuStats();
-CpuUsageStats* front_CpuStats();
-CpuUsageStats* rear_CpuStats();
+CpuUsageStats* dequeue_CpuStats(void);
+CpuUsageStats* front_CpuStats(void);
+CpuUsageStats* rear_CpuStats(void);
 
-void printQueue();
+void printQueue(void);
 
 //queue for printing purposes
 struct QueueCpuStatsPrint
@@ -69,12 +69,12 @@ struct QueueCpuStatsPrint
 
 // functions for processing the printing queue
 
-bool isFull_CpuStatsPrint();
-bool isEmpty_CpuStatsPrint();
+bool isFull_CpuStatsPrint(void);
+bool isEmpty_CpuStatsPrint(void);
 int push_CpuStatsPrint(CpuUsageStatsPrint cpuStatsPrint);
-CpuUsageStatsPrint* dequeue_CpuStatsPrint();
-CpuUsageStatsPrint* front_CpuStatsPrint();
-CpuUsageStatsPrint* rear_CpuStatsPrint();
+CpuUsageStatsPrint* dequeue_CpuStatsPrint(void);
+CpuUsageStatsPrint* front_CpuStatsPrint(void);
+CpuUsageStatsPrint* rear_CpuStatsPrint(void);
 
 
 

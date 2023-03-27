@@ -1,13 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdatomic.h>
 #include "printerThr.h"
 #include "queue.h"
 
 #define gotoxy(x,y) printf("\033[%u;%uH", (x), (y))
 
 extern unsigned int threadsNum;
+extern atomic_bool printerCheckPoint;
 
 static void printCpuUsage(CpuUsageStatsPrint* cpuUsage);
+
+atomic_bool printerToClose;
 
 void* printerThread(void* arg)
 {
@@ -19,6 +23,8 @@ void* printerThread(void* arg)
     // nanosleep(&ts, &ts);   
     // pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
     // pthread_mutex_unlock(&queueCpuStatsMutex);
+    (void)arg;     //to get rid of warning
+    atomic_store(&printerToClose, false);
     printf("Before barrier waiting (printer)\n");
     pthread_barrier_wait(&barrier);
     printf("Threads num in printer (begining): %d\n", threadsNum); 
@@ -34,6 +40,12 @@ void* printerThread(void* arg)
         while((tmpCpuStatsPrint = dequeue_CpuStatsPrint()) == NULL)
         {
             pthread_cond_wait(&condCpuStatsPrinterQueue, &queueCpuStatsPrinterMutex);
+            if(atomic_load(&printerToClose))
+            {
+                free(cpuStatsPrint);
+                pthread_mutex_unlock(&queueCpuStatsPrinterMutex);
+                return NULL;
+            }
         }
         cpuStatsPrint[0] = *tmpCpuStatsPrint;
 
@@ -51,6 +63,8 @@ void* printerThread(void* arg)
         // {
         //     printf("%s usage: %f\n", cpuStatsPrint[i].t_cpuName, cpuStatsPrint[i].t_cpuUsagePercentage);
         // }
+        atomic_store(&printerCheckPoint, true);
+
     }
     free(cpuStatsPrint);
     return NULL;
@@ -63,7 +77,7 @@ static void printCpuUsage(CpuUsageStatsPrint* cpuUsage)
     for(unsigned int i = 0; i < (threadsNum + 1); i++)
     {
         gotoxy(i + 1, 1);
-        size = cpuUsage[i].t_cpuUsagePercentage * 10;
+        size = (unsigned int)(cpuUsage[i].t_cpuUsagePercentage * 10);
         printf("%s", cpuUsage[i].t_cpuName);
         gotoxy(i + 1, 6);
         printf("usage:  ");
@@ -74,6 +88,6 @@ static void printCpuUsage(CpuUsageStatsPrint* cpuUsage)
         for(unsigned int j = 0; j < size; j++)
             printf("|");
         gotoxy(i + 1, 24);  
-        printf("] - %.1f%%  ", cpuUsage[i].t_cpuUsagePercentage * 100);
+        printf("] - %.1f%%  ", (double)(cpuUsage[i].t_cpuUsagePercentage) * 100);
     }
 }

@@ -3,11 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdatomic.h>
 #include "analyzerThr.h"
 #include "queue.h"
 
 extern unsigned int threadsNum;
 extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
+extern atomic_bool analyzerCheckPoint;
+
+atomic_bool analyzerToClose;
 
 void* analyzerThread(void* arg)
 {
@@ -18,6 +22,8 @@ void* analyzerThread(void* arg)
     // nanosleep(&ts, &ts);   
     // pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
     // pthread_mutex_unlock(&queueCpuStatsMutex);
+    (void)arg;     //to get rid of warning
+    atomic_store(&analyzerToClose, false);
     printf("Before barrier waiting (analyzer)\n");
     pthread_barrier_wait(&barrier);
     printf("Threads num in analyzer (begining): %d\n", threadsNum); 
@@ -45,6 +51,17 @@ void* analyzerThread(void* arg)
         while((tmpCpuStats = dequeue_CpuStats()) == NULL)
         {
             pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
+            if(atomic_load(&analyzerToClose))
+            {
+                free(cpuStats);
+                free(prevCpuStats);
+                free(cpuStatsPrint);
+                printf("Closing analyzer thread\n");
+                //remember to unlock mutexes
+                pthread_mutex_unlock(&queueCpuStatsMutex);
+
+                return NULL;
+            }
         }
         printf("Analyzer thread after condition %d\n", i);
         if(tmpCpuStats != NULL)
@@ -99,6 +116,8 @@ void* analyzerThread(void* arg)
         pthread_mutex_unlock(&queueCpuStatsPrinterMutex);
 
         memcpy(prevCpuStats, cpuStats, sizeof(CpuUsageStats) * (threadsNum + 1));
+
+        atomic_store(&analyzerCheckPoint, true);
     }
     free(cpuStats);
     free(prevCpuStats);

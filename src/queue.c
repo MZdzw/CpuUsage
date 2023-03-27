@@ -20,12 +20,12 @@ unsigned long* (*accessorsCpu[10])(CpuUsageStats*) = {
 };
 
 
-bool isFull_CpuStats()
+bool isFull_CpuStats(void)
 {
     return (cpuStatsQueue.size == MAX_CAPACITY);
 }
 
-bool isEmpty_CpuStats()
+bool isEmpty_CpuStats(void)
 {
     return (cpuStatsQueue.size == 0);
 }
@@ -40,7 +40,7 @@ int push_CpuStats(CpuUsageStats cpuStats)
     return OK;
 }
 
-CpuUsageStats* dequeue_CpuStats()
+CpuUsageStats* dequeue_CpuStats(void)
 {
     if(isEmpty_CpuStats())
         return NULL;
@@ -50,21 +50,21 @@ CpuUsageStats* dequeue_CpuStats()
     return cpuStatsDequeued;
 }
 
-CpuUsageStats* front_CpuStats()
+CpuUsageStats* front_CpuStats(void)
 {
     if(isEmpty_CpuStats())
         return NULL;
     return &(cpuStatsQueue.cpuValues[cpuStatsQueue.front]);
 }
 
-CpuUsageStats* rear_CpuStats()
+CpuUsageStats* rear_CpuStats(void)
 {
     if(isEmpty_CpuStats())
         return NULL;
     return &(cpuStatsQueue.cpuValues[cpuStatsQueue.rear]);
 }
 
-void printQueue()
+void printQueue(void)
 {
     for(size_t i = 0; i < cpuStatsQueue.size; i++)
     {
@@ -73,12 +73,12 @@ void printQueue()
     }
 }
 
-bool isFull_CpuStatsPrint()
+bool isFull_CpuStatsPrint(void)
 {
     return (cpuStatsQueuePrint.size == MAX_CAPACITY);
 }
 
-bool isEmpty_CpuStatsPrint()
+bool isEmpty_CpuStatsPrint(void)
 {
     return (cpuStatsQueuePrint.size == 0);
 }
@@ -93,7 +93,7 @@ int push_CpuStatsPrint(CpuUsageStatsPrint cpuStatsPrint)
     return OK;
 }
 
-CpuUsageStatsPrint* dequeue_CpuStatsPrint()
+CpuUsageStatsPrint* dequeue_CpuStatsPrint(void)
 {
     if(isEmpty_CpuStatsPrint())
         return NULL;
@@ -103,14 +103,14 @@ CpuUsageStatsPrint* dequeue_CpuStatsPrint()
     return cpuStatsDequeuedPrint;
 }
 
-CpuUsageStatsPrint* front_CpuStatsPrint()
+CpuUsageStatsPrint* front_CpuStatsPrint(void)
 {
     if(isEmpty_CpuStatsPrint())
         return NULL;
     return &(cpuStatsQueuePrint.cpuValues[cpuStatsQueuePrint.front]);
 }
 
-CpuUsageStatsPrint* rear_CpuStatsPrint()
+CpuUsageStatsPrint* rear_CpuStatsPrint(void)
 {
     if(isEmpty_CpuStatsPrint())
         return NULL;

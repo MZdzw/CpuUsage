@@ -1,8 +1,15 @@
 CC := $(CC)
 CPPFLAGS := -MMD -MP
-CFLAGS = -Wall -Wextra
+ifeq ($(CC),gcc)
+  CFLAGS = -Wall -Wextra
+else ifeq ($(CC),clang)
+  CFLAGS = -Weverything -Wno-padded -Wno-declaration-after-statement -Wno-shadow
+  CFLAGS += -Wno-missing-variable-declarations -Wno-implicit-int-float-conversion
+endif
+#CFLAGS = -Wall -Wextra
 LDFLAGS  := -Llib
 LDLIBS   := -lm
+
 
 PRJ_NAME = qualTask
 TARGET_EXTENSION = out
