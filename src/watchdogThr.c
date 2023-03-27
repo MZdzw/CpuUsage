@@ -12,19 +12,27 @@ atomic_bool readerCheckPoint;
 atomic_bool analyzerCheckPoint;
 atomic_bool printerCheckPoint;
 
+atomic_bool watchdogToClose;
+
 void* watchdogThread(void* arg)
 {
     (void)arg;     //to get rid of warning
     atomic_init(&readerCheckPoint, false);
     atomic_init(&analyzerCheckPoint, false);
     atomic_init(&printerCheckPoint, false);
+    atomic_init(&watchdogToClose, false);
     printf("Watchdog: %d\n", atomic_load(&readerCheckPoint));
     for(int i = 0; i < 10; i++)
     {
         atomic_store(&readerCheckPoint, false);
         atomic_store(&analyzerCheckPoint, false);
         atomic_store(&printerCheckPoint, false);
+        atomic_store(&watchdogToClose, false);
         sleep(2);
+        if(atomic_load(&watchdogToClose))
+        {
+            return NULL;
+        }
         printf("Watchdog readerCheckPoint: %d\n", atomic_load(&readerCheckPoint));
         printf("Watchdog analyzerCheckPoint: %d\n", atomic_load(&analyzerCheckPoint));
         printf("Watchdog printerCheckPoint: %d\n", atomic_load(&printerCheckPoint));

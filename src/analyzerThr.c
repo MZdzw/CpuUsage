@@ -43,7 +43,7 @@ void* analyzerThread(void* arg)
         }
     }
 
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 20; i++)
     {
         pthread_mutex_lock(&queueCpuStatsMutex);
         printf("Analyzer thread inside %d\n", i);
