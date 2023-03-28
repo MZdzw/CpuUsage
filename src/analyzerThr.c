@@ -8,24 +8,19 @@
 #include "analyzerThr.h"
 #include "queue.h"
 
+atomic_bool analyzerCheckPoint;
 atomic_bool analyzerToClose;
 
 void* analyzerThread(void* arg)
 {
-    // struct timespec ts;
-    // ts.tv_sec = 0;
-    // ts.tv_nsec = 300000;    //300 ms
-    //wait some time to get threadsNum set
-    // nanosleep(&ts, &ts);   
-    // pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
-    // pthread_mutex_unlock(&queueCpuStatsMutex);
     (void)arg;     //to get rid of warning
-    atomic_store(&analyzerToClose, false);
-    printf("Before barrier waiting (analyzer)\n");
+    atomic_init(&analyzerCheckPoint, false);
+    atomic_init(&analyzerToClose, false);
+
     pthread_barrier_wait(&barrier);
-    printf("Threads num in analyzer (begining): %d\n", threadsNum); 
     
     CpuUsageStats* tmpCpuStats;
+    //dynamically allocate memory for cpu stats, because we don't know how many cpu threads can have user
     CpuUsageStats* cpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1) * 3);     //times 3 in case to buffer some data
     CpuUsageStats* prevCpuStats = malloc(sizeof(CpuUsageStats) * (threadsNum + 1) * 3);
 
@@ -40,31 +35,31 @@ void* analyzerThread(void* arg)
         }
     }
 
-    for(int i = 0; i < 20; i++)
+    for(;;)
     {
         pthread_mutex_lock(&queueCpuStatsMutex);
-        printf("Analyzer thread inside %d\n", i);
 
         while((tmpCpuStats = dequeue_CpuStats()) == NULL)
         {
+            // here wait for signal from reader thread (or from watchdog)
             pthread_cond_wait(&condCpuStatsQueue, &queueCpuStatsMutex);
+            // if signal came from watchdog that means it has to terminate itself
             if(atomic_load(&analyzerToClose))
             {
                 free(cpuStats);
                 free(prevCpuStats);
                 free(cpuStatsPrint);
-                printf("Closing analyzer thread\n");
                 //remember to unlock mutexes
                 pthread_mutex_unlock(&queueCpuStatsMutex);
 
                 return NULL;
             }
         }
-        printf("Analyzer thread after condition %d\n", i);
         if(tmpCpuStats != NULL)
-         cpuStats[0] = *tmpCpuStats;
+            cpuStats[0] = *tmpCpuStats;
       
-        int cnt = 1;
+        size_t cnt = 1;
+        // read all cpu stats from queue
         while((tmpCpuStats = dequeue_CpuStats()) != NULL)
         {
             cpuStats[cnt++] = *tmpCpuStats;
@@ -72,17 +67,6 @@ void* analyzerThread(void* arg)
 
 
         pthread_mutex_unlock(&queueCpuStatsMutex);
-
-        // printf("Cpu val: %s - %lu\n", cpuStats[0].t_cpuName, cpuStats[0].t_user);
-        // printf("Prev val: %s - %lu\n", prevCpuStats[0].t_cpuName, prevCpuStats[0].t_user);
-        // printf("user\tnice\tsystem\tidle\tiowait\tirq\tsoftirq\tsteal\tguest\tguest_nice\n");
-        // printf("%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\n", cpuStats[0].t_user, cpuStats[0].t_nice,
-        //         cpuStats[0].t_system, cpuStats[0].t_idle, cpuStats[0].t_iowait, cpuStats[0].t_irq,
-        //         cpuStats[0].t_softirq, cpuStats[0].t_steal, cpuStats[0].t_guest, cpuStats[0].t_guestNice);
-
-        // printf("%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu\n", prevCpuStats[0].t_user, prevCpuStats[0].t_nice,
-        //         prevCpuStats[0].t_system, prevCpuStats[0].t_idle, prevCpuStats[0].t_iowait, prevCpuStats[0].t_irq,
-        //         prevCpuStats[0].t_softirq, prevCpuStats[0].t_steal, prevCpuStats[0].t_guest, prevCpuStats[0].t_guestNice);
 
         // now after reading the CPU usage we can process these values
         for(size_t i = 0; i < threadsNum + 1; i++)
@@ -98,9 +82,8 @@ void* analyzerThread(void* arg)
             unsigned long totald = Total - PrevTotal;
             unsigned long idled = Idle - PrevIdle;
             cpuStatsPrint[i].t_cpuUsagePercentage = (double)(totald - idled)/totald;
-            strcpy(cpuStatsPrint[i].t_cpuName, cpuStats[i].t_cpuName);
 
-            //printf("%s usage: %f\n", cpuStatsPrint[i].t_cpuName, cpuStatsPrint[i].t_cpuUsagePercentage);
+            strcpy(cpuStatsPrint[i].t_cpuName, cpuStats[i].t_cpuName);
         }
 
         // get mutex lock and push values to queue for printing
@@ -112,12 +95,14 @@ void* analyzerThread(void* arg)
         pthread_cond_signal(&condCpuStatsPrinterQueue);
         pthread_mutex_unlock(&queueCpuStatsPrinterMutex);
 
+        // copy current values to previous variable
         memcpy(prevCpuStats, cpuStats, sizeof(CpuUsageStats) * (threadsNum + 1));
 
+        // mark itself to watchdog of being alive
         atomic_store(&analyzerCheckPoint, true);
     }
-    free(cpuStats);
-    free(prevCpuStats);
-    free(cpuStatsPrint);
-    return NULL;
+    // free(cpuStats);
+    // free(prevCpuStats);
+    // free(cpuStatsPrint);
+    // return NULL;
 }

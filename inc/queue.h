@@ -10,7 +10,7 @@
 
 typedef struct
 {
-    char t_cpuName[6];          // cpuxx\0
+    char t_cpuName[6];                              // cpuxx\0
     unsigned long t_user;
     unsigned long t_nice;
     unsigned long t_system;
@@ -31,7 +31,7 @@ typedef struct
 
 
 //variables initialized in main function
-extern pthread_mutex_t queueCpuStatsMutex;     //for accessing queue with CpuStats (analyzer-reader)
+extern pthread_mutex_t queueCpuStatsMutex;            //for accessing queue with CpuStats (analyzer-reader)
 extern pthread_mutex_t queueCpuStatsPrinterMutex;     //for accessing queue for printing
 
 extern pthread_cond_t condCpuStatsQueue;
@@ -48,12 +48,12 @@ extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
 struct QueueCpuStats
 {
     CpuUsageStats cpuValues[MAX_CAPACITY];
-    size_t front;       //index for dequeue
-    size_t rear;        //index for push
-    size_t size;        //current size of queue
+    size_t front;                                     //index for dequeue
+    size_t rear;                                      //index for push
+    size_t size;                                      //current size of queue
 };
 
-// functions for processing the queue
+// functions for parsing the queue
 
 bool isFull_CpuStats(void);
 bool isEmpty_CpuStats(void);
@@ -68,12 +68,12 @@ void printQueue(void);
 struct QueueCpuStatsPrint
 {
     CpuUsageStatsPrint cpuValues[MAX_CAPACITY];
-    size_t front;       //index for dequeue
-    size_t rear;        //index for push
-    size_t size;        //current size of queue
+    size_t front;                                   //index for dequeue
+    size_t rear;                                    //index for push
+    size_t size;                                    //current size of queue
 };
 
-// functions for processing the printing queue
+// functions for parsing the printing queue
 bool isFull_CpuStatsPrint(void);
 bool isEmpty_CpuStatsPrint(void);
 int push_CpuStatsPrint(CpuUsageStatsPrint cpuStatsPrint);

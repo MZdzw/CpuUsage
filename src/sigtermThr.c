@@ -20,13 +20,12 @@ void term(int signum)
 
 void* sigtermThread(void* arg)
 {
-    (void)arg;     //to get rid of warning
+    (void)arg;                              //to get rid of warning
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = term;
     sigaction(SIGTERM, &action, NULL);
  
-    int loop = 0;
     while (!done)
     {
         unsigned int t = sleep(3);
@@ -34,11 +33,8 @@ void* sigtermThread(void* arg)
          * interrupted */
         while (t > 0)
         {
-            printf("Loop run was interrupted with %d "
-                   "sec to go, finishing...\n", t);
             t = sleep(t);
         }
-        printf("Finished loop run %d.\n", loop++);
     }
     // there you can terminate all threads
 
@@ -49,10 +45,10 @@ void* sigtermThread(void* arg)
     atomic_store(&watchdogToClose, true);
 
     //in case of analyzer and printer threads you need to send signal
-    printf("Sigterm broadcast end\n");
+    // printf("Sigterm broadcast end\n");
     pthread_cond_broadcast(&condCpuStatsQueue);
     pthread_cond_broadcast(&condCpuStatsPrinterQueue);       
  
-    printf("done.\n");
+    // printf("done.\n");
     return NULL;
 }
