@@ -14,9 +14,6 @@ extern struct QueueCpuStats cpuStatsQueue;
 extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
 extern atomic_bool readerCheckPoint;
 
-static int getCpuStatsFromFile(void);
-static int getCpuThreadsNum(void);
-
 static char buf[MAX];
 unsigned int threadsNum;
 
@@ -30,7 +27,8 @@ void* readerThread(void* arg)
     atomic_store(&readerToClose, false);
     printf("First reader\n");
     // pthread_mutex_lock(&queueCpuStatsMutex);
-    getCpuThreadsNum();
+    if(getCpuThreadsNum("/proc/stat") != OK)
+        return NULL;
     printf("Reader broadcast\n");
     // pthread_cond_broadcast(&condCpuStatsQueue);
     // pthread_mutex_unlock(&queueCpuStatsMutex);
@@ -45,7 +43,7 @@ void* readerThread(void* arg)
         //alternative below (need timespec struct as param)
         //pthread_delay_np(&ts);
         printf("Reader Thread inside %d\n", i);
-        if(getCpuStatsFromFile() != OK)
+        if(getCpuStatsFromFile("/proc/stat") != OK)
             return NULL;
 
         //printQueue();
@@ -62,9 +60,9 @@ void* readerThread(void* arg)
     return NULL;
 }
 
-static int getCpuStatsFromFile(void)
+int getCpuStatsFromFile(char* fileName)
 {
-    FILE* ptrStatsFile = fopen("/proc/stat", "r");
+    FILE* ptrStatsFile = fopen(fileName, "r");
     if(ptrStatsFile == NULL)
     {
         perror("Could not open stat file");
@@ -108,13 +106,14 @@ static int getCpuStatsFromFile(void)
     return OK;
 }
 
-static int getCpuThreadsNum(void)
+int getCpuThreadsNum(char* fileName)
 {
-    FILE* ptrStatsFile = fopen("/proc/stat", "r");
+    threadsNum = 0;
+    FILE* ptrStatsFile = fopen(fileName, "r");
     if(ptrStatsFile == NULL)
     {
         perror("Could not open stat file");
-        fclose(ptrStatsFile);
+        //fclose(ptrStatsFile);      //you can't close if you don't open a file
         return FILE_OPEN_ERROR;      //return error
     }
 
@@ -136,7 +135,14 @@ static int getCpuThreadsNum(void)
 
         ptrStringSplit = strtok(buf, " ");          //get first word from line
     }
-    threadsNum--;           //don't count "cpu"
+    if(threadsNum != 0)
+        threadsNum--;           //don't count "cpu"
+
+    if(threadsNum <= 0)
+    {
+        fclose(ptrStatsFile);
+        return READ_NO_CPU_THR;
+    }
 
     fclose(ptrStatsFile);
     return OK;              //don't count "cpu"
