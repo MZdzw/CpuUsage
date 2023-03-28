@@ -5,16 +5,16 @@
 #include <stdatomic.h>
 #include "sigtermThr.h"
 #include "queue.h"
+#include "analyzerThr.h"
+#include "printerThr.h"
+#include "readerThr.h"
+#include "watchdogThr.h"
 
-extern atomic_bool readerToClose;
-extern atomic_bool analyzerToClose;
-extern atomic_bool printerToClose;
-extern atomic_bool watchdogToClose;
-
-volatile sig_atomic_t done = 0;
+static volatile sig_atomic_t done = 0;
  
 void term(int signum)
 {
+    (void)signum;
     done = 1;
 }
 
@@ -29,7 +29,7 @@ void* sigtermThread(void* arg)
     int loop = 0;
     while (!done)
     {
-        int t = sleep(3);
+        unsigned int t = sleep(3);
         /* sleep returns the number of seconds left if
          * interrupted */
         while (t > 0)
@@ -51,10 +51,7 @@ void* sigtermThread(void* arg)
     //in case of analyzer and printer threads you need to send signal
     printf("Sigterm broadcast end\n");
     pthread_cond_broadcast(&condCpuStatsQueue);
-    pthread_cond_broadcast(&condCpuStatsPrinterQueue);
-
-    return NULL;         
-
+    pthread_cond_broadcast(&condCpuStatsPrinterQueue);       
  
     printf("done.\n");
     return NULL;

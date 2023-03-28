@@ -3,4 +3,6 @@
 
 void* sigtermThread(void* arg);
 
+void term(int signum);
+
 #endif

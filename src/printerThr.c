@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdatomic.h>
+#include "readerThr.h"
 #include "printerThr.h"
 #include "queue.h"
 
 #define gotoxy(x,y) printf("\033[%u;%uH", (x), (y))
-
-extern unsigned int threadsNum;
-extern atomic_bool printerCheckPoint;
 
 static void printCpuUsage(CpuUsageStatsPrint* cpuUsage);
 

@@ -30,7 +30,7 @@ typedef struct
 } CpuUsageStatsPrint;
 
 
-//variable initialized in main function
+//variables initialized in main function
 extern pthread_mutex_t queueCpuStatsMutex;     //for accessing queue with CpuStats (analyzer-reader)
 extern pthread_mutex_t queueCpuStatsPrinterMutex;     //for accessing queue for printing
 
@@ -38,6 +38,12 @@ extern pthread_cond_t condCpuStatsQueue;
 extern pthread_cond_t condCpuStatsPrinterQueue;
 
 extern pthread_barrier_t barrier;
+////////////////
+
+//defined or initialized in queue.c unit
+extern struct QueueCpuStats cpuStatsQueue;
+extern struct QueueCpuStatsPrint cpuStatsQueuePrint;
+extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
 
 struct QueueCpuStats
 {
@@ -68,15 +74,12 @@ struct QueueCpuStatsPrint
 };
 
 // functions for processing the printing queue
-
 bool isFull_CpuStatsPrint(void);
 bool isEmpty_CpuStatsPrint(void);
 int push_CpuStatsPrint(CpuUsageStatsPrint cpuStatsPrint);
 CpuUsageStatsPrint* dequeue_CpuStatsPrint(void);
 CpuUsageStatsPrint* front_CpuStatsPrint(void);
 CpuUsageStatsPrint* rear_CpuStatsPrint(void);
-
-
 
 // add accessors to CpuUsageStats members
 // This method allows to be independent of the memory layout
@@ -90,6 +93,5 @@ unsigned long* getSoftirq(CpuUsageStats *stats);
 unsigned long* getSteal(CpuUsageStats *stats);
 unsigned long* getGuest(CpuUsageStats *stats);
 unsigned long* getGuestNice(CpuUsageStats *stats);
-
 
 #endif

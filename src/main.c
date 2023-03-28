@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include "queue.h"
 #include "readerThr.h"
 #include "analyzerThr.h"
 #include "printerThr.h"
 #include "watchdogThr.h"
 #include "sigtermThr.h"
 
+// global variables used in other modules
 pthread_mutex_t queueCpuStatsMutex;
 pthread_mutex_t queueCpuStatsPrinterMutex;
 

@@ -3,10 +3,10 @@
 #include <stdatomic.h>
 #include "watchdogThr.h"
 #include "queue.h"
+#include "analyzerThr.h"
+#include "readerThr.h"
+#include "printerThr.h"
 
-extern atomic_bool readerToClose;
-extern atomic_bool analyzerToClose;
-extern atomic_bool printerToClose;
 
 atomic_bool readerCheckPoint;
 atomic_bool analyzerCheckPoint;

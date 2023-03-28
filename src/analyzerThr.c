@@ -4,12 +4,9 @@
 #include <string.h>
 #include <time.h>
 #include <stdatomic.h>
+#include "readerThr.h"
 #include "analyzerThr.h"
 #include "queue.h"
-
-extern unsigned int threadsNum;
-extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
-extern atomic_bool analyzerCheckPoint;
 
 atomic_bool analyzerToClose;
 

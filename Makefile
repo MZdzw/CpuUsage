@@ -4,7 +4,7 @@ ifeq ($(CC),gcc)
   CFLAGS = -Wall -Wextra
 else ifeq ($(CC),clang)
   CFLAGS = -Weverything -Wno-padded -Wno-declaration-after-statement -Wno-shadow
-  CFLAGS += -Wno-missing-variable-declarations -Wno-implicit-int-float-conversion
+  CFLAGS += -Wno-implicit-int-float-conversion -Wno-disabled-macro-expansion
 endif
 #CFLAGS = -Wall -Wextra
 LDFLAGS  := -Llib

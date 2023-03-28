@@ -4,20 +4,19 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-#include <stdatomic.h>
 #include "readerThr.h"
 #include "queue.h"
 
 #define MAX 100
 
-extern struct QueueCpuStats cpuStatsQueue;
-extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
-extern atomic_bool readerCheckPoint;
+// extern struct QueueCpuStats cpuStatsQueue;
+// extern unsigned long* (*accessorsCpu[10])(CpuUsageStats*);
+
 
 static char buf[MAX];
-unsigned int threadsNum;
+static CpuUsageStats cpuStats;
 
-CpuUsageStats cpuStats;
+unsigned int threadsNum;
 atomic_bool readerToClose;
 
 
