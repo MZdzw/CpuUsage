@@ -52,9 +52,9 @@ IGNORE = `grep -s IGNORE $(RESULTS_DIR)/*.txt`
 
 .PHONY: all test clean
 
-all: $(PRJ_NAME)
+all: $(PRJ_NAME).$(TARGET_EXTENSION)
 
-$(PRJ_NAME): $(OBJ) | $(BIN_DIR)
+$(PRJ_NAME).$(TARGET_EXTENSION): $(OBJ) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $(BIN_DIR)/$@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
@@ -71,10 +71,10 @@ test: $(RESULTS)
 	@echo "$(PASSED)"
 	@echo "\nDONE"
 
-$(RESULTS): $(PRJ_NAME)Test | $(RESULTS_DIR)
+$(RESULTS): $(PRJ_NAME)Test.$(TARGET_EXTENSION) | $(RESULTS_DIR)
 	-./$(BIN_DIR)/$< > $@ 2>&1
 
-$(PRJ_NAME)Test: $(OBJTEST) | $(BIN_DIR)
+$(PRJ_NAME)Test.$(TARGET_EXTENSION): $(OBJTEST) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $(BIN_DIR)/$@
 
 $(OBJ_DIR)/%.o: $(TEST_DIR)/%.c | $(OBJ_DIR)
