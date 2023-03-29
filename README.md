@@ -3,10 +3,11 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![App screenshot](https://github.com/MZdzw/QualTask/tree/main/img/app.png?raw=true)
+![App screenshot](https://github.com/MZdzw/QualTask/blob/main/img/app.png)
 
 Hi! You got to the program which calculates the CPU usage based on /proc/stat file. This program is runnable only on linux OS.
 
+![App gif](https://github.com/MZdzw/QualTask/blob/main/img/app.gif)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -79,14 +80,14 @@ After running the program it will work forever. To end this process you need to 
   ```sh
   ps a
   ```
-Example output should look like this
-  ```sh
-   PID  TTY      STAT   TIME COMMAND
-    [...]
-   4278 pts/1    Ss     0:00 bash
-   7106 pts/2    Ss     0:00 bash
-   7116 pts/1    Sl+    0:00 ./qualTask.out
-   7561 pts/2    R+     0:00 ps a
+  Example output should look like this
+    ```sh
+  PID  TTY      STAT   TIME COMMAND
+  [...]
+  4278 pts/1    Ss     0:00 bash
+  7106 pts/2    Ss     0:00 bash
+  7116 pts/1    Sl+    0:00 ./qualTask.out
+  7561 pts/2    R+     0:00 ps a
   ```
 * Send SIGTERM
   ```sh
@@ -96,6 +97,7 @@ Example output should look like this
   ```sh
   kill 7116
   ```
+  
 After that the app should end its performance.
 
 
